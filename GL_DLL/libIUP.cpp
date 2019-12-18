@@ -1,6 +1,7 @@
 // dllmain.cpp : Определяет точку входа для приложения DLL.
 #include "libIUP.h"
 #include <string>
+#include <iostream>
 
 #ifdef  assert
 #define verify(expr) if(!expr) assert(0)
@@ -81,8 +82,16 @@ BOOL renderSC()
 
 	glPopMatrix();
 	glFlush();
-
-	CreateShaderProgram();
+	int major, minor;
+	glGetIntegerv(GL_MAJOR_VERSION, &major);
+	glGetIntegerv(GL_MINOR_VERSION, &minor);
+	std::cout << "\n\nOpenGL information:"
+		<<"\n "<< (const char*)glGetString(GL_RENDERER)
+		<<"\n " << (const char*)glGetString(GL_VENDOR)
+		<<"\n " << (const char*)glGetString(GL_VERSION)
+		//<<"\n " << (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION)
+		<<"\n " << major<<"." << minor;
+	//CreateShaderProgram();
 
 	return 0;
 }
