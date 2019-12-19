@@ -1,5 +1,11 @@
 // dllmain.cpp : Определяет точку входа для приложения DLL.
 #include "libIUP.h"
+#include "GL/glew.h"
+#include "GL/wglew.h"
+#include <GL/gl.h>
+//#include "GL/glext.h"
+//#include "GL/wglext.h"
+//#include  "SOIL.h
 #include <string>
 #include <iostream>
 
@@ -23,12 +29,12 @@ int cxDIB(0);
 int cyDIB(0);
 BITMAPINFOHEADER BIH;
 
-GLvoid CreateShaderProgram();
-GLvoid LoadTex(std::string path);
+//GLvoid CreateShaderProgram();
+//GLvoid LoadTex(std::string path);
 
 BOOL initSC()
 {
-	LoadTex("C:\\Projects\\AeroGLWinAPI\\GL_DLL\\glass.png");
+	//LoadTex("C:\\Projects\\AeroGLWinAPI\\GL_DLL\\glass.png");
 
 	glEnable(GL_ALPHA_TEST);
 	glEnable(GL_DEPTH_TEST);
@@ -40,6 +46,16 @@ BOOL initSC()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glClearColor(0, 0, 0, 0);
+
+	int major, minor;
+	glGetIntegerv(GL_MAJOR_VERSION, &major);
+	glGetIntegerv(GL_MINOR_VERSION, &minor);
+	std::cout << "\n\nOpenGL information:"
+		<< "\n " << (const char*)glGetString(GL_RENDERER)
+		<< "\n " << (const char*)glGetString(GL_VENDOR)
+		<< "\n " << (const char*)glGetString(GL_VERSION)
+		//<<"\n " << (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION)
+		<< "\n " << major << "." << minor;
 
 	return 0;
 }
@@ -82,15 +98,6 @@ BOOL renderSC()
 
 	glPopMatrix();
 	glFlush();
-	int major, minor;
-	glGetIntegerv(GL_MAJOR_VERSION, &major);
-	glGetIntegerv(GL_MINOR_VERSION, &minor);
-	std::cout << "\n\nOpenGL information:"
-		<<"\n "<< (const char*)glGetString(GL_RENDERER)
-		<<"\n " << (const char*)glGetString(GL_VENDOR)
-		<<"\n " << (const char*)glGetString(GL_VERSION)
-		//<<"\n " << (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION)
-		<<"\n " << major<<"." << minor;
 	//CreateShaderProgram();
 
 	return 0;
@@ -149,6 +156,7 @@ void CreateDIB(int cx, int cy)
 BOOL CreateHGLRC()
 {
 	DWORD dwFlags = PFD_SUPPORT_OPENGL | PFD_DRAW_TO_BITMAP;
+	HGLRC hRCTemp;
 
 	PIXELFORMATDESCRIPTOR pfd;
 	memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
@@ -172,10 +180,46 @@ BOOL CreateHGLRC()
 		return FALSE;
 	}
 
-	m_hrc = wglCreateContext(pdcDIB);
-	if (!m_hrc) {
+	hRCTemp = wglCreateContext(pdcDIB);
+	if (!hRCTemp || !wglMakeCurrent(pdcDIB, hRCTemp)) {
 		assert(0);
 		return FALSE;
+	}
+
+	GLenum err = glewInit();
+	if (GLEW_OK != err) 
+	{
+		std::cout << "GLEW";
+		return FALSE;
+	}
+
+	/*int attribs[] =
+	{
+		WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
+		WGL_CONTEXT_MINOR_VERSION_ARB, 3,
+		WGL_CONTEXT_FLAGS_ARB,         WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+		WGL_CONTEXT_PROFILE_MASK_ARB,  WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+		0
+	};*/
+	int attribs[] =
+	{
+		WGL_CONTEXT_MAJOR_VERSION_ARB, 1,
+		WGL_CONTEXT_MINOR_VERSION_ARB, 4,
+		WGL_CONTEXT_FLAGS_ARB, 0,
+		0
+	};
+	if (wglewIsSupported("WGL_ARB_create_context") == 1) 
+	{
+		std::cout << "\nSupported";
+		m_hrc = wglCreateContextAttribsARB(pdcDIB, 0, attribs);
+		wglMakeCurrent(NULL, NULL);
+		wglDeleteContext(hRCTemp);
+		wglMakeCurrent(pdcDIB, m_hrc);
+	}
+	else 
+	{
+		std::cout << "\nNot supported";
+		m_hrc = hRCTemp;
 	}
 
 	return TRUE;
@@ -289,7 +333,7 @@ LIBIUP_API int LIBIUP_Main(int width, int height)
 	return TRUE;
 }
 
-GLvoid LoadImage(std::string path)
+/*GLvoid LoadImage(std::string path)
 {
 	int width, height;
 	unsigned char* image = SOIL_load_image(path.c_str(), &width, &height, 0, SOIL_LOAD_RGB);
@@ -321,10 +365,10 @@ GLvoid LoadTex(std::string path)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	LoadImage(path);
-}
+}*/
 
 // Shaders
-const GLchar* vertexShaderSource = "#version 330 core\n"
+/*const GLchar* vertexShaderSource = "#version 330 core\n"
 "layout (location = 0) in vec3 position;\n"
 "layout (location = 1) in vec2 texCoord;\n"
 "out vec2 TexCoord;\n"
@@ -342,9 +386,9 @@ const GLchar* fragmentShaderSource = "#version 330 core\n"
 "void main()\n"
 "{\n"
 "color = texture(texture, TexCoord);\n"
-"}\0";
+"}\0";*/
 
-GLuint LinkShaders()//функция создания и сборки шейдеров
+/*GLuint LinkShaders()//функция создания и сборки шейдеров
 {
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
@@ -406,4 +450,4 @@ GLvoid CreateShaderProgram()
 
 	//создание и сборка шейдерной программы
 	GLuint shaderProgram = LinkShaders();
-}
+}*/

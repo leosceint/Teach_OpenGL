@@ -1,13 +1,8 @@
 #pragma once
 #include <windows.h>
-#define GLEW_STATIC
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
 #include <time.h>
 #include <assert.h>
 #include <tchar.h>
-#include  "SOIL.h"
 
 #ifdef _EXPORTS
 #define LIBIUP_API __declspec(dllexport)

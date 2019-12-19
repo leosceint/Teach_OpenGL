@@ -242,13 +242,13 @@ void GLWindowSetSize(int width, int height, bool fullScreen)
 		ShowCursor(FALSE);
 
 		style   = WS_POPUP;
-		exStyle = WS_EX_APPWINDOW | WS_EX_TOPMOST;
+		exStyle = WS_EX_APPWINDOW | WS_EX_TOPMOST | WS_EX_LAYERED;
 
 		x = y = 0;
 	} else // если полноэкранный режим не нужен, или его не удалось установить
 	{
-		style   = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
-		exStyle = WS_EX_APPWINDOW;
+		style   = WS_MINIMIZEBOX;
+		exStyle = WS_EX_APPWINDOW | WS_EX_LAYERED;
 
 		// выровняем окно по центру экрана
 		x = (GetSystemMetrics(SM_CXSCREEN) - width)  / 2;
@@ -266,7 +266,7 @@ void GLWindowSetSize(int width, int height, bool fullScreen)
 	// установим стили окна
 	SetWindowLong(g_hWnd, GWL_STYLE,   style);
 	SetWindowLong(g_hWnd, GWL_EXSTYLE, exStyle);
-
+	SetLayeredWindowAttributes(g_hWnd, 0, (255 * 70) / 100, LWA_ALPHA);
 	// обновим позицию окна
 	SetWindowPos(g_hWnd, HWND_TOP, rect.left, rect.top,
 		rect.right - rect.left, rect.bottom - rect.top,
