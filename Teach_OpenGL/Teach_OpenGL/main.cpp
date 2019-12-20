@@ -1,11 +1,18 @@
 #include <windows.h>
+#include "GL/glew.h"
+#include <gl/GL.h>
+#include <gl/GLU.h>
+#include "GL/wglew.h"
 #include <iostream>
 #include <cstdlib>
 #include <string>
 
-void DetectOLGVersion() 
+
+HGLRC m_hRC;
+
+void DetectOGLVersion() 
 {
-/*	int major, minor;
+	/*int major, minor;
 	glGetIntegerv(GL_MAJOR_VERSION, &major);
 	glGetIntegerv(GL_MINOR_VERSION, &minor);
 	std::cout << "\n\nOpenGL information:"
@@ -14,7 +21,7 @@ void DetectOLGVersion()
 		<< "\n " << (const char*)glGetString(GL_VERSION)
 		<< "\n " << (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION)
 		<< "\n " << major << "." << minor;
-*/
+		*/
 }
 
 LRESULT CALLBACK WindowCallback(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) 
@@ -64,6 +71,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	WindowClass.hbrBackground	= (HBRUSH)(COLOR_WINDOW);
 	WindowClass.lpszClassName	= "Name";
 	
+	PIXELFORMATDESCRIPTOR		pfd;
+	HGLRC						hRCtemp;
+	HDC							hDC;
+	int							format;
+
+	PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = NULL;
+
+	int attribs[] =
+	{
+		WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
+		WGL_CONTEXT_MINOR_VERSION_ARB, 3,
+		WGL_CONTEXT_FLAGS_ARB,         WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+		WGL_CONTEXT_PROFILE_MASK_ARB,  WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+		0
+	};
+
 	if (!RegisterClassEx(&WindowClass))
 	{
 		std::cout << "\nError 1";
@@ -77,8 +100,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	int height = 500;
 
 	DWORD	style, exStyle;
+
 	style = WS_VISIBLE | WS_POPUP;
 	exStyle = WS_EX_APPWINDOW;
+	
 	HWND hWnd = CreateWindowEx(exStyle, WindowClass.lpszClassName, "Window", style, desktopWidth / 2 - width / 2, desktopHeight / 2 - height / 2, width, height,
 		NULL, NULL, 0, NULL);
 	
@@ -87,6 +112,57 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		return -1;
 	}
 
+	//Получаем дескриптор контекста окна
+	hDC = GetDC(hWnd);
+	if (!hDC) 
+	{
+		MessageBox(NULL, "Get DC - failed", "Error", MB_OK | MB_ICONERROR);
+		return -1;
+	}
+
+	//Описание формата пикселей
+	memset(&pfd, 0, sizeof(pfd));
+	pfd.nSize = sizeof(pfd);
+	pfd.nVersion = 1;
+	pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+	pfd.iPixelType = PFD_TYPE_RGBA;
+	pfd.cColorBits = 32;
+	pfd.cDepthBits = 24;
+
+	format = ChoosePixelFormat(hDC, &pfd);
+	if (!format || !SetPixelFormat(hDC, format, &pfd))
+	{
+		MessageBox(NULL, "Setting pixel format fail", "Error", MB_OK | MB_ICONERROR);
+		return -1;
+	}
+
+	hRCtemp = wglCreateContext(hDC);
+	if (!hRCtemp || !wglMakeCurrent(hDC, hRCtemp))
+	{
+		MessageBox(NULL, "Сreating temp render context fail", "Error", MB_OK | MB_ICONERROR);
+		return -1;
+	}
+
+	wglCreateContextAttribsARB = reinterpret_cast<PFNWGLCREATECONTEXTATTRIBSARBPROC>(
+		wglGetProcAddress("wglCreateContextAttribsARB"));
+
+	if (!wglCreateContextAttribsARB) 
+	{
+		MessageBox(NULL, "wglCreateContextAttribsARB fail", "Error", MB_OK | MB_ICONERROR);
+		return -1;
+	}
+
+	wglMakeCurrent(NULL, NULL);
+	wglDeleteContext(hRCtemp);
+
+	m_hRC = wglCreateContextAttribsARB(hDC, 0, attribs);
+	if (!m_hRC || !wglMakeCurrent(hDC, m_hRC))
+	{
+		MessageBox(NULL, "Creating render context fail", "Error", MB_OK | MB_ICONERROR);
+		return -1;
+	}
+
+	//DetectOGLVersion();
 	ShowWindow(hWnd, SW_SHOW);
 	//UpdateWindow(hWnd);
 
