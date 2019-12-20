@@ -8,7 +8,8 @@
 #include <string>
 
 
-HGLRC m_hRC;
+HGLRC	m_hRC;
+HDC		hDC;
 
 void DetectOGLVersion() 
 {
@@ -23,7 +24,8 @@ void DetectOGLVersion()
 		<< "\n " << major << "." << minor;
 		*/
 }
-
+//
+//
 LRESULT CALLBACK WindowCallback(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) 
 {
 	PAINTSTRUCT ps;
@@ -73,7 +75,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	
 	PIXELFORMATDESCRIPTOR		pfd;
 	HGLRC						hRCtemp;
-	HDC							hDC;
 	int							format;
 
 	PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = NULL;
