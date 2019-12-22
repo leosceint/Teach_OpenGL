@@ -11,12 +11,15 @@
 HGLRC	m_hRC;
 HDC		hDC;
 
+
 void DetectOGLVersion() 
 {
-	/*int major, minor;
+	int major, minor;
 	glGetIntegerv(GL_MAJOR_VERSION, &major);
 	glGetIntegerv(GL_MINOR_VERSION, &minor);
-	std::cout << "\n\nOpenGL information:"
+	std::string s = std::to_string(major) + "." + std::to_string(minor);
+	MessageBox(NULL, s.c_str(), "Info", MB_OK);
+	/*std::cout << "\n\nOpenGL information:"
 		<< "\n " << (const char*)glGetString(GL_RENDERER)
 		<< "\n " << (const char*)glGetString(GL_VENDOR)
 		<< "\n " << (const char*)glGetString(GL_VERSION)
@@ -143,7 +146,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		MessageBox(NULL, "Ñreating temp render context fail", "Error", MB_OK | MB_ICONERROR);
 		return -1;
 	}
-
+	
 	wglCreateContextAttribsARB = reinterpret_cast<PFNWGLCREATECONTEXTATTRIBSARBPROC>(
 		wglGetProcAddress("wglCreateContextAttribsARB"));
 
@@ -162,8 +165,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		MessageBox(NULL, "Creating render context fail", "Error", MB_OK | MB_ICONERROR);
 		return -1;
 	}
-
-	//DetectOGLVersion();
+	
+	DetectOGLVersion();
 	ShowWindow(hWnd, SW_SHOW);
 	//UpdateWindow(hWnd);
 
