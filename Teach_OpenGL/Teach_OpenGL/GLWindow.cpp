@@ -30,13 +30,13 @@ GLWindow::GLWindow(LPCTSTR WindowName, HINSTANCE hInstance, int Width, int Heigh
 		return;
 	}
 	RECT Desktop = GetDesktopResolution();
-	int X = static_cast<int>(0.5 * Desktop.right);
-	int Y = static_cast<int>(0.5 * Desktop.bottom);
+	int X = static_cast<int>(0.5 * Desktop.right - 0.5*Width);
+	int Y = static_cast<int>(0.5 * Desktop.bottom - 0.5*Height);
 
 	DWORD style = WS_VISIBLE | WS_POPUP;
 	DWORD exStyle = WS_EX_LAYERED;
 
-	HWND hWnd = CreateWindowEx(exStyle, WindowClass.lpszClassName, "Window", style,
+	HWND hWnd = CreateWindowEx(exStyle, WindowClass.lpszClassName, WindowName, style,
 		X, Y, Width, Height,
 		NULL, NULL, 0, NULL);
 	
@@ -45,23 +45,21 @@ GLWindow::GLWindow(LPCTSTR WindowName, HINSTANCE hInstance, int Width, int Heigh
 		return;
 	}
 	SetLayeredWindowAttributes(hWnd, 0x1, 0, LWA_COLORKEY);
+	IsRunning = true;
 	hDC = GetDC(hWnd);
 }
 
 HWND GLWindow::GetHWND() 
 {
-	if (!hWnd) 
-	{
-		MessageBox(NULL, "Window not yet created ", "Error", MB_OK | MB_ICONERROR);
-		return NULL;
-	}
-	else 
-	{
-		return hWnd;
-	}
+	return hWnd;
 }
 
 HDC GLWindow::GetHDC() 
 {
 	return hDC;
+}
+
+BOOL GLWindow::Show() 
+{
+	return ShowWindow(hWnd, SW_SHOW);
 }

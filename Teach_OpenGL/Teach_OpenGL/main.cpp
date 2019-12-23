@@ -3,13 +3,11 @@
 #include <gl/GL.h>
 #include <gl/GLU.h>
 #include "GL/wglew.h"
-#include <iostream>
 #include <cstdlib>
 #include <string>
-
+#include "GLWindow.h"
 
 HGLRC	m_hRC;
-HDC		hDC;
 
 
 void DetectOGLVersion() 
@@ -99,6 +97,8 @@ void DeInitHGLRC(HDC hDC, HGLRC* hGLRC)
 //
 LRESULT CALLBACK WindowCallback(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) 
 {
+	HDC hDC = NULL;
+
 	switch (msg) 
 	{
 	case WM_CREATE:
@@ -127,16 +127,6 @@ LRESULT CALLBACK WindowCallback(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 	}
 	return 0;
 }
-
-void GetDesktopResolution(int& horizontal, int& vertical)
-{
-	RECT desktop;
-	const HWND hDesktop = GetDesktopWindow();
-	GetWindowRect(hDesktop, &desktop);
-	horizontal = desktop.right;
-	vertical = desktop.bottom;
-}
-//
 //
 
 //
@@ -145,56 +135,17 @@ GLvoid DrawGLScene(GLvoid)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR, int)
 {
-	WNDCLASSEX WindowClass;
-	memset(&WindowClass, 0, sizeof(WindowClass));
-	WindowClass.hInstance		= 0;
-	WindowClass.cbSize			= sizeof(WNDCLASSEX);
-	WindowClass.hIconSm			= LoadIcon(NULL, IDI_APPLICATION);
-	WindowClass.style			= CS_HREDRAW | CS_VREDRAW;
-	WindowClass.lpfnWndProc		= (WNDPROC)WindowCallback;
-	WindowClass.cbClsExtra		= 0;
-	WindowClass.cbWndExtra		= 0;
-	WindowClass.hIcon			= LoadIcon(NULL, IDI_APPLICATION);
-	WindowClass.hCursor			= LoadCursor(NULL, IDC_ARROW);
-	WindowClass.hbrBackground	= (HBRUSH)(COLOR_WINDOW);
-	WindowClass.lpszClassName	= "Name";
-	
-
-	if (!RegisterClassEx(&WindowClass))
-	{
-		std::cout << "\nError 1";
-		return -1;
-	}
-
-	int desktopWidth, desktopHeight;
-	GetDesktopResolution(desktopWidth, desktopHeight);
-
 	int width = 1000;
 	int height = 500;
 
-	DWORD	style, exStyle;
-
-	style = WS_VISIBLE | WS_POPUP;
-	exStyle = WS_EX_LAYERED;
-	
-	HWND hWnd = CreateWindowEx(exStyle, WindowClass.lpszClassName, "Window", style, desktopWidth / 2 - width / 2, desktopHeight / 2 - height / 2, width, height,
-		NULL, NULL, 0, NULL);
-	
-	if (!hWnd) {
-		MessageBox(NULL, "CreateWindowEx - failed", "Error", MB_OK | MB_ICONERROR);
-		return -1;
-	}
-	SetLayeredWindowAttributes(hWnd, 0x1, 0, LWA_COLORKEY);
-
-	ShowWindow(hWnd, SW_SHOW);
-	//UpdateWindow(hWnd);
-	bool running = true;
+	GLWindow WGL("Window", hInstance, width, height, WindowCallback);	
+	WGL.Show();
 
 	MSG msg;
 
-	while (running)
+	while (WGL.IsRunning)
 	{
 		while (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) 
 		{
@@ -203,11 +154,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 				DrawGLScene();
-				SwapBuffers(hDC);
+				SwapBuffers(WGL.GetHDC());
 			}
 			else 
 			{
-				running = false;
+				WGL.IsRunning = false;
 			}
 		}
 	}

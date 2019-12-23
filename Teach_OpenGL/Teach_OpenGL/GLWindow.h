@@ -11,6 +11,9 @@ public:
 	HWND GetHWND();
 	HDC GetHDC();
 	RECT GetDesktopResolution();
+	BOOL Show();
+public:
+	bool IsRunning;
 protected:
 	HWND hWnd;
 	HDC hDC;
