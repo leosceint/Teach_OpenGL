@@ -1,13 +1,9 @@
 #include <windows.h>
-#include "GL/glew.h"
-#include <gl/GL.h>
-#include <gl/GLU.h>
-#include "GL/wglew.h"
+#include "OpenGL.h"
+#include "GLWindow.h"
 #include <cstdlib>
 #include <string>
-#include "GLWindow.h"
 
-HGLRC	m_hRC;
 
 
 void DetectOGLVersion() 
@@ -78,8 +74,8 @@ int InitHGLRC(HDC hDC, HGLRC* hGLRC)
 	wglMakeCurrent(NULL, NULL);
 	wglDeleteContext(hRCtemp);
 
-	m_hRC = wglCreateContextAttribsARB(hDC, 0, GL_attribs);
-	if (!m_hRC || !wglMakeCurrent(hDC, *(hGLRC)))
+	*hGLRC = wglCreateContextAttribsARB(hDC, 0, GL_attribs);
+	if (!(*hGLRC) || !wglMakeCurrent(hDC, *(hGLRC)))
 	{
 		MessageBox(NULL, "Creating render context fail", "Error", MB_OK | MB_ICONERROR);
 		return -1;
@@ -94,21 +90,18 @@ void DeInitHGLRC(HDC hDC, HGLRC* hGLRC)
 	wglMakeCurrent(NULL, NULL);
 	wglDeleteContext(*hGLRC);
 }
+
 //
 LRESULT CALLBACK WindowCallback(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) 
 {
 	HDC hDC = NULL;
+	HGLRC	m_hRC;
 
 	switch (msg) 
 	{
 	case WM_CREATE:
 		//Получаем дескриптор контекста окна
 		hDC = GetDC(hWnd);
-		if (!hDC)
-		{
-			MessageBox(NULL, "Get DC - failed", "Error", MB_OK | MB_ICONERROR);
-			return -1;
-		}
 		InitHGLRC(hDC, &m_hRC);
 		break;
 	case WM_CLOSE:
@@ -135,12 +128,12 @@ GLvoid DrawGLScene(GLvoid)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR, int)
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int CmdShow)
 {
 	int width = 1000;
 	int height = 500;
 
-	GLWindow WGL("Window", hInstance, width, height, WindowCallback);	
+	GLWindow WGL("HUD", hInstance, width, height, WindowCallback);	
 	WGL.Show();
 
 	MSG msg;

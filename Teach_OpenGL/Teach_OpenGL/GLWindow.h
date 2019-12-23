@@ -2,7 +2,9 @@
 #define GLWINDOW_H
 #include <windows.h>
 
-
+//=================================
+//Класс окна
+//=================================
 class GLWindow 
 {
 public:
