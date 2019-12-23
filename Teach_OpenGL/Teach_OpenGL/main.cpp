@@ -28,12 +28,14 @@ void DetectOGLVersion()
 		*/
 }
 //
+int InitHGLRC(HDC hDC, HGLRC* hGLRC) 
+{
+	
+	return 0;
+}
 //
 LRESULT CALLBACK WindowCallback(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) 
 {
-	PAINTSTRUCT ps;
-	HDC hDC;
-
 	switch (msg) 
 	{
 	case WM_CREATE:
@@ -41,10 +43,6 @@ LRESULT CALLBACK WindowCallback(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
-	/*case WM_PAINT:
-		hDC = BeginPaint(hWnd, &ps);
-		EndPaint(hWnd, &ps);
-		break;*/
 	default:
 		return DefWindowProc(hWnd, msg, wParam, lParam);
 	}
@@ -58,6 +56,12 @@ void GetDesktopResolution(int& horizontal, int& vertical)
 	GetWindowRect(hDesktop, &desktop);
 	horizontal = desktop.right;
 	vertical = desktop.bottom;
+}
+
+GLvoid DrawGLScene(GLvoid) 
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 }
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
@@ -82,7 +86,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = NULL;
 
-	int attribs[] =
+	int GL_attribs[] =
 	{
 		WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
 		WGL_CONTEXT_MINOR_VERSION_ARB, 3,
@@ -159,7 +163,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	wglMakeCurrent(NULL, NULL);
 	wglDeleteContext(hRCtemp);
 
-	m_hRC = wglCreateContextAttribsARB(hDC, 0, attribs);
+	m_hRC = wglCreateContextAttribsARB(hDC, 0, GL_attribs);
 	if (!m_hRC || !wglMakeCurrent(hDC, m_hRC))
 	{
 		MessageBox(NULL, "Creating render context fail", "Error", MB_OK | MB_ICONERROR);
@@ -169,10 +173,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	DetectOGLVersion();
 	ShowWindow(hWnd, SW_SHOW);
 	//UpdateWindow(hWnd);
+	bool running = true;
 
 	MSG msg;
 
-	while (true)
+	while (running)
 	{
 		while (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) 
 		{
@@ -181,7 +186,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 			}
-			else return 0;
+			if (running) 
+			{
+				DrawGLScene();
+				SwapBuffers(hDC);
+			}
 		}
 	}
 	return 0;
