@@ -84,10 +84,21 @@ int GLContext::InitHGLRC(HDC hDC, HGLRC* hGLRC, std::string version)
 //
 void GLContext::InitScene(int Width, int Height)
 {
-	glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+	/*glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
 	glClearDepth(1.0);                      
 	glDepthFunc(GL_LESS);                  
+	glEnable(GL_DEPTH_TEST);*/
+	glEnable(GL_ALPHA_TEST);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_COLOR_MATERIAL);
+
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glClearColor(0, 0, 0, 0);
+
 	glShadeModel(GL_SMOOTH);        
 	glMatrixMode(GL_PROJECTION);    
 	glLoadIdentity();               
@@ -136,18 +147,20 @@ void GLContext::InitScene(int Width, int Height)
 //
 void GLContext::DrawScene() 
 {
-	if (0)
+	if (1)
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glLoadIdentity();
 		glTranslatef(-1.5f, 0.0f, -6.0f);
 		glBegin(GL_TRIANGLES);
+		glColor3f(1.0f, 0.0f, 0.0f);
 		glVertex3f(0.0f, 1.0f, 0.0f);  // Вверх
 		glVertex3f(-1.0f, -1.0f, 0.0f);  // Слева снизу
 		glVertex3f(1.0f, -1.0f, 0.0f);  // Справа снизу
 		glEnd();
 		glTranslatef(3.0f, 0.0f, 0.0f);
 		glBegin(GL_QUADS);
+		glColor3f(0.0f, 1.0f, 0.0f);
 		glVertex3f(-1.0f, 1.0f, 0.0f);  // Слева вверху
 		glVertex3f(1.0f, 1.0f, 0.0f);  // Справа вверху
 		glVertex3f(1.0f, -1.0f, 0.0f);  // Справа внизу
@@ -155,14 +168,17 @@ void GLContext::DrawScene()
 		glEnd();
 	}
 	// wipe the drawing surface clear
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glUseProgram(shader_programme);
-	glBindVertexArray(vao);
-	// draw points 0-3 from the currently bound VAO with current in-use shader
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	if(0)
+	{
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glUseProgram(shader_programme);
+		glBindVertexArray(vao);
+		// draw points 0-3 from the currently bound VAO with current in-use shader
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 
-	// put the stuff we've been drawing onto the display
-	//glSwapBuffers(window);
+		// put the stuff we've been drawing onto the display
+		//glSwapBuffers(window);
+	}
 }
 //
 void GLContext::DeInitHGLRC(HGLRC* hGLRC)
