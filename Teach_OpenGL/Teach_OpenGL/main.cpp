@@ -1,5 +1,4 @@
 #include <windows.h>
-#define GLEW_STATIC
 #include "OpenGL.h"
 #include "GLWindow.h"
 #include "GLContext.h"
@@ -50,7 +49,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine,
 
 	GLWindow WGL("HUD", hInstance, width, height, WindowCallback);
 	WGL.Show();
-
+	UpdateWindow(WGL.GetHWND());
 	MSG msg;
 
 	while (WGL.IsRunning)
@@ -61,14 +60,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine,
 			{
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
-				GLRC.DrawScene();
-				SwapBuffers(WGL.GetHDC());
 			}
 			else
 			{
 				WGL.IsRunning = false;
 			}
 		}
+		GLRC.DrawScene();
+		SwapBuffers(WGL.GetHDC());
 	}
 	return 0;
 }

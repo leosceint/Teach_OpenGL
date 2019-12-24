@@ -1,5 +1,6 @@
 #include "OpenGL.h"
 #include "GLContext.h"
+float angle = 0.0f;
 
 float points[] = {
    0.0f,  1.0f,  0.0f,
@@ -84,10 +85,6 @@ int GLContext::InitHGLRC(HDC hDC, HGLRC* hGLRC, std::string version)
 //
 void GLContext::InitScene(int Width, int Height)
 {
-	/*glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
-	glClearDepth(1.0);                      
-	glDepthFunc(GL_LESS);                  
-	glEnable(GL_DEPTH_TEST);*/
 	glEnable(GL_ALPHA_TEST);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_COLOR_MATERIAL);
@@ -102,7 +99,7 @@ void GLContext::InitScene(int Width, int Height)
 	glShadeModel(GL_SMOOTH);        
 	glMatrixMode(GL_PROJECTION);    
 	glLoadIdentity();               
-	gluPerspective(45.0f, (GLfloat)Width / (GLfloat)Height, 0.1f, 100.0f);
+	gluOrtho2D(-1.0, 1.0, -1.0, 1.0);
 	glMatrixMode(GL_MODELVIEW);	
 
 	GLuint vbo = 0;
@@ -151,33 +148,30 @@ void GLContext::DrawScene()
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glLoadIdentity();
-		glTranslatef(-1.5f, 0.0f, -6.0f);
+		glRotatef(angle, 0.0, 0.0, 1.0);
 		glBegin(GL_TRIANGLES);
 		glColor3f(1.0f, 0.0f, 0.0f);
-		glVertex3f(0.0f, 1.0f, 0.0f);  // Вверх
-		glVertex3f(-1.0f, -1.0f, 0.0f);  // Слева снизу
-		glVertex3f(1.0f, -1.0f, 0.0f);  // Справа снизу
+		glVertex2f(0.0f, 0.0f);  // Вверх
+		glVertex2f(-1.0f, -1.0f);  // Слева снизу
+		glVertex2f(0.0f, -1.0f);  // Справа снизу
 		glEnd();
-		glTranslatef(3.0f, 0.0f, 0.0f);
 		glBegin(GL_QUADS);
 		glColor3f(0.0f, 1.0f, 0.0f);
-		glVertex3f(-1.0f, 1.0f, 0.0f);  // Слева вверху
-		glVertex3f(1.0f, 1.0f, 0.0f);  // Справа вверху
-		glVertex3f(1.0f, -1.0f, 0.0f);  // Справа внизу
-		glVertex3f(-1.0f, -1.0f, 0.0f);  // Слева внизу
+		glVertex2f(0.5f, 1.0f);  // Слева вверху
+		glVertex2f(1.0f, 1.0f);  // Справа вверху
+		glVertex2f(1.0f, -1.0f);  // Справа внизу
+		glVertex2f(0.5f, -1.0f);  // Слева внизу
 		glEnd();
+		angle += 0.2f;
 	}
 	// wipe the drawing surface clear
 	if(0)
 	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glUseProgram(shader_programme);
 		glBindVertexArray(vao);
 		// draw points 0-3 from the currently bound VAO with current in-use shader
 		glDrawArrays(GL_TRIANGLES, 0, 3);
-
-		// put the stuff we've been drawing onto the display
-		//glSwapBuffers(window);
 	}
 }
 //
