@@ -1,6 +1,15 @@
 #include "OpenGL.h"
 #include "GLContext.h"
 
+float points[] = {
+   0.0f,  1.0f,  0.0f,
+   1.0f, -1.0f,  0.0f,
+  -1.0f, -1.0f,  0.0f
+};
+
+GLuint shader_programme;
+GLuint vao;
+
 int GLContext::InitHGLRC(HDC hDC, HGLRC* hGLRC, std::string version)
 {
 	int pos=version.find(".");
@@ -73,9 +82,9 @@ int GLContext::InitHGLRC(HDC hDC, HGLRC* hGLRC, std::string version)
 	return 0;
 }
 //
-/*void InitScene(int Width, int Height) 
+void GLContext::InitScene(int Width, int Height)
 {
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
 	glClearDepth(1.0);                      
 	glDepthFunc(GL_LESS);                  
 	glEnable(GL_DEPTH_TEST);
@@ -83,8 +92,78 @@ int GLContext::InitHGLRC(HDC hDC, HGLRC* hGLRC, std::string version)
 	glMatrixMode(GL_PROJECTION);    
 	glLoadIdentity();               
 	gluPerspective(45.0f, (GLfloat)Width / (GLfloat)Height, 0.1f, 100.0f);
-	glMatrixMode(GL_MODELVIEW);
-}*/
+	glMatrixMode(GL_MODELVIEW);	
+
+	GLuint vbo = 0;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(float), points, GL_STATIC_DRAW);
+
+	vao = 0;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+	const char* vertex_shader =
+		"#version 400\n"
+		"in vec3 vp;"
+		"void main() {"
+		"  gl_Position = vec4(vp, 1.0);"
+		"}";
+
+	const char* fragment_shader =
+		"#version 400\n"
+		"out vec4 frag_colour;"
+		"void main() {"
+		"  frag_colour = vec4(0.5, 0.0, 0.5, 1.0);"
+		"}";
+
+	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vs, 1, &vertex_shader, NULL);
+	glCompileShader(vs);
+	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fs, 1, &fragment_shader, NULL);
+	glCompileShader(fs);
+
+
+	shader_programme = glCreateProgram();
+	glAttachShader(shader_programme, fs);
+	glAttachShader(shader_programme, vs);
+	glLinkProgram(shader_programme);
+}
+//
+void GLContext::DrawScene() 
+{
+	if (0)
+	{
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glLoadIdentity();
+		glTranslatef(-1.5f, 0.0f, -6.0f);
+		glBegin(GL_TRIANGLES);
+		glVertex3f(0.0f, 1.0f, 0.0f);  // Вверх
+		glVertex3f(-1.0f, -1.0f, 0.0f);  // Слева снизу
+		glVertex3f(1.0f, -1.0f, 0.0f);  // Справа снизу
+		glEnd();
+		glTranslatef(3.0f, 0.0f, 0.0f);
+		glBegin(GL_QUADS);
+		glVertex3f(-1.0f, 1.0f, 0.0f);  // Слева вверху
+		glVertex3f(1.0f, 1.0f, 0.0f);  // Справа вверху
+		glVertex3f(1.0f, -1.0f, 0.0f);  // Справа внизу
+		glVertex3f(-1.0f, -1.0f, 0.0f);  // Слева внизу
+		glEnd();
+	}
+	// wipe the drawing surface clear
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glUseProgram(shader_programme);
+	glBindVertexArray(vao);
+	// draw points 0-3 from the currently bound VAO with current in-use shader
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+
+	// put the stuff we've been drawing onto the display
+	//glSwapBuffers(window);
+}
 //
 void GLContext::DeInitHGLRC(HGLRC* hGLRC)
 {
@@ -93,7 +172,7 @@ void GLContext::DeInitHGLRC(HGLRC* hGLRC)
 	wglDeleteContext(*hGLRC);
 }
 //
-void GLContext::DetectOGLVersion()
+void GLContext::DetectVersion()
 {
 	int major, minor;
 	glGetIntegerv(GL_MAJOR_VERSION, &major);

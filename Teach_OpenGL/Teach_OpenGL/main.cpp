@@ -5,40 +5,9 @@
 #include "GLContext.h"
 
 GLContext& GLRC = GLContext::Instance();
+int GlobalWidth = 0;
+int GlobalHeight = 0;
 //
-void init(int Width, int Height)
-{
-	glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
-	glClearDepth(1.0);
-	glDepthFunc(GL_LESS);
-	glEnable(GL_DEPTH_TEST);
-	glShadeModel(GL_SMOOTH);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(45.0f, (GLfloat)Width / (GLfloat)Height, 0.1f, 100.0f);
-	glMatrixMode(GL_MODELVIEW);
-}
-
-//
-void DrawGLScene()
-{
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
-	glLoadIdentity();
-	glTranslatef(-1.5f, 0.0f, -6.0f);
-	glBegin(GL_TRIANGLES);
-	glVertex3f(0.0f, 1.0f, 0.0f);  // Вверх
-	glVertex3f(-1.0f, -1.0f, 0.0f);  // Слева снизу
-	glVertex3f(1.0f, -1.0f, 0.0f);  // Справа снизу
-	glEnd();
-	glTranslatef(3.0f, 0.0f, 0.0f);
-	glBegin(GL_QUADS);
-	glVertex3f(-1.0f, 1.0f, 0.0f);  // Слева вверху
-	glVertex3f(1.0f, 1.0f, 0.0f);  // Справа вверху
-	glVertex3f(1.0f, -1.0f, 0.0f);  // Справа внизу
-	glVertex3f(-1.0f, -1.0f, 0.0f);  // Слева внизу
-	glEnd();
-}
-
 //
 LRESULT CALLBACK WindowCallback(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -51,7 +20,7 @@ LRESULT CALLBACK WindowCallback(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 		//Получаем дескриптор контекста окна
 		hDC = GetDC(hWnd);
 		GLRC.InitHGLRC(hDC, &m_hRC, "3.1");
-		init(1000,500);
+		GLRC.InitScene(GlobalWidth, GlobalHeight);
 		break;
 	case WM_CLOSE:
 		GLRC.DeInitHGLRC(&m_hRC);
@@ -62,7 +31,7 @@ LRESULT CALLBACK WindowCallback(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 		PostQuitMessage(0);
 		break;
 	case WM_KEYDOWN:
-		if (wParam == VK_F1) GLRC.DetectOGLVersion();
+		if (wParam == VK_F1) GLRC.DetectVersion();
 		break;
 	default:
 		return DefWindowProc(hWnd, msg, wParam, lParam);
@@ -75,6 +44,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine,
 {
 	int width = 1000;
 	int height = 500;
+
+	GlobalWidth = width;
+	GlobalHeight = height;
 
 	GLWindow WGL("HUD", hInstance, width, height, WindowCallback);
 	WGL.Show();
@@ -89,7 +61,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine,
 			{
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
-				DrawGLScene();
+				GLRC.DrawScene();
 				SwapBuffers(WGL.GetHDC());
 			}
 			else

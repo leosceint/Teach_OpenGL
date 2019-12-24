@@ -44,7 +44,7 @@ GLWindow::GLWindow(LPCTSTR WindowName, HINSTANCE hInstance, int Width, int Heigh
 		MessageBox(NULL, "CreateWindowEx - failed", "Error", MB_OK | MB_ICONERROR);
 		return;
 	}
-	SetLayeredWindowAttributes(hWnd, 0x1, 0, LWA_COLORKEY);
+	SetLayeredWindowAttributes(hWnd, 0x0, 0, LWA_COLORKEY);
 	IsRunning = true;
 	hDC = GetDC(hWnd);
 }

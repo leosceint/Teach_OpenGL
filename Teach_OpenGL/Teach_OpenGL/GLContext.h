@@ -13,9 +13,10 @@ public:
         return glc;
     }
     int InitHGLRC(HDC hDC, HGLRC* hGLRC, std::string version);
-    //void InitScene(int Width, int Height);
+    void InitScene(int Width, int Height);
+    void DrawScene();
     void DeInitHGLRC(HGLRC* hGLRC);
-    void DetectOGLVersion();
+    void DetectVersion();
 
 private:
     GLContext() {}                                  
