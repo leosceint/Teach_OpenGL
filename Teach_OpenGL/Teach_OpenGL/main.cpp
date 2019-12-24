@@ -1,17 +1,37 @@
 #include <windows.h>
+#define GLEW_STATIC
 #include "OpenGL.h"
 #include "GLWindow.h"
 #include <cstdlib>
-#include <string>
+#include <sstream>
+//#include <iostream>
+//
+void init()
+{
 
+}
 
+//
+GLvoid DrawGLScene(GLvoid)
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-void DetectOGLVersion() 
+}
+
+///
+void DetectOGLVersion()
 {
 	int major, minor;
 	glGetIntegerv(GL_MAJOR_VERSION, &major);
 	glGetIntegerv(GL_MINOR_VERSION, &minor);
-	std::string s = std::to_string(major) + "." + std::to_string(minor);
+	const char* Renderer = (const char*)glGetString(GL_RENDERER);
+	const char* Vendor = (const char*)glGetString(GL_VENDOR);
+	const char* Version = (const char*)glGetString(GL_VERSION);
+	std::ostringstream ss;
+	ss << "Ver: " << major << "."<<minor
+	   <<"\nRend: "<< Renderer<<" Vend: "<<Vendor;
+	std::string s = ss.str();
+
 	MessageBox(NULL, s.c_str(), "Detected ver. Open GL", MB_OK);
 	/*std::cout << "\n\nOpenGL information:"
 		<< "\n " << (const char*)glGetString(GL_RENDERER)
@@ -22,7 +42,7 @@ void DetectOGLVersion()
 		*/
 }
 //
-int InitHGLRC(HDC hDC, HGLRC* hGLRC) 
+int InitHGLRC(HDC hDC, HGLRC* hGLRC)
 {
 	PIXELFORMATDESCRIPTOR		pfd;
 	HGLRC						hRCtemp;
@@ -32,10 +52,9 @@ int InitHGLRC(HDC hDC, HGLRC* hGLRC)
 
 	int GL_attribs[] =
 	{
-		WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
-		WGL_CONTEXT_MINOR_VERSION_ARB, 3,
-		WGL_CONTEXT_FLAGS_ARB,         WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
-		WGL_CONTEXT_PROFILE_MASK_ARB,  WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+		WGL_CONTEXT_MAJOR_VERSION_ARB, 1,
+		WGL_CONTEXT_MINOR_VERSION_ARB, 0,
+		WGL_CONTEXT_FLAGS_ARB, 0,
 		0
 	};
 
@@ -61,7 +80,6 @@ int InitHGLRC(HDC hDC, HGLRC* hGLRC)
 		MessageBox(NULL, "Сreating temp render context fail", "Error", MB_OK | MB_ICONERROR);
 		return -1;
 	}
-
 	wglCreateContextAttribsARB = reinterpret_cast<PFNWGLCREATECONTEXTATTRIBSARBPROC>(
 		wglGetProcAddress("wglCreateContextAttribsARB"));
 
@@ -80,11 +98,18 @@ int InitHGLRC(HDC hDC, HGLRC* hGLRC)
 		MessageBox(NULL, "Creating render context fail", "Error", MB_OK | MB_ICONERROR);
 		return -1;
 	}
+	
+	GLenum error = glewInit();
+	if (GLEW_OK != error)
+	{
+		MessageBox(NULL, "Glew Init - fail", "Error", MB_OK | MB_ICONERROR);
+		return -1;
+	}
 
 	return 0;
 }
 //
-void DeInitHGLRC(HDC hDC, HGLRC* hGLRC) 
+void DeInitHGLRC(HDC hDC, HGLRC* hGLRC)
 {
 	ChangeDisplaySettings(NULL, 0);
 	wglMakeCurrent(NULL, NULL);
@@ -92,17 +117,18 @@ void DeInitHGLRC(HDC hDC, HGLRC* hGLRC)
 }
 
 //
-LRESULT CALLBACK WindowCallback(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) 
+LRESULT CALLBACK WindowCallback(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HDC hDC = NULL;
 	HGLRC	m_hRC;
 
-	switch (msg) 
+	switch (msg)
 	{
 	case WM_CREATE:
 		//Получаем дескриптор контекста окна
 		hDC = GetDC(hWnd);
 		InitHGLRC(hDC, &m_hRC);
+		init();
 		break;
 	case WM_CLOSE:
 		DeInitHGLRC(hDC, &m_hRC);
@@ -122,25 +148,19 @@ LRESULT CALLBACK WindowCallback(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 }
 //
 
-//
-GLvoid DrawGLScene(GLvoid) 
-{
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int CmdShow)
 {
 	int width = 1000;
 	int height = 500;
 
-	GLWindow WGL("HUD", hInstance, width, height, WindowCallback);	
+	GLWindow WGL("HUD", hInstance, width, height, WindowCallback);
 	WGL.Show();
 
 	MSG msg;
 
 	while (WGL.IsRunning)
 	{
-		while (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) 
+		while (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
 		{
 			if (GetMessage(&msg, NULL, 0, 0))
 			{
@@ -149,7 +169,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine,
 				DrawGLScene();
 				SwapBuffers(WGL.GetHDC());
 			}
-			else 
+			else
 			{
 				WGL.IsRunning = false;
 			}
