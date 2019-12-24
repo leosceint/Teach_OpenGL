@@ -1,6 +1,7 @@
 #ifndef GLCONTEXT_H
 #define GLCONTEXT_H
 #include <windows.h>
+#include "OpenGL.h"
 #include <sstream>
 #include <string>
 //

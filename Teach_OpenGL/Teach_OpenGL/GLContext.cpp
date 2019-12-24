@@ -1,4 +1,3 @@
-#include "OpenGL.h"
 #include "GLContext.h"
 float angle = 0.0f;
 
@@ -114,14 +113,14 @@ void GLContext::InitScene(int Width, int Height)
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
-	const char* vertex_shader =
+	const char* VertexShader =
 		"#version 400\n"
 		"in vec3 vp;"
 		"void main() {"
 		"  gl_Position = vec4(vp, 1.0);"
 		"}";
 
-	const char* fragment_shader =
+	const char* FragmentShader =
 		"#version 400\n"
 		"out vec4 frag_colour;"
 		"void main() {"
@@ -129,10 +128,10 @@ void GLContext::InitScene(int Width, int Height)
 		"}";
 
 	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vs, 1, &vertex_shader, NULL);
+	glShaderSource(vs, 1, &VertexShader, NULL);
 	glCompileShader(vs);
 	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fs, 1, &fragment_shader, NULL);
+	glShaderSource(fs, 1, &FragmentShader, NULL);
 	glCompileShader(fs);
 
 
@@ -167,7 +166,7 @@ void GLContext::DrawScene()
 	// wipe the drawing surface clear
 	if(0)
 	{
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glUseProgram(shader_programme);
 		glBindVertexArray(vao);
 		// draw points 0-3 from the currently bound VAO with current in-use shader
